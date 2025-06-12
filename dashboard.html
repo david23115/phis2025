@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Control</title>
+  <link rel="stylesheet" href="../registro/dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <div class="barra-superior">
+    <h1>Panel de Control</h1>
+    <div class="usuario">
+      <div class="icono-usuario">
+        <i class="fas fa-user"></i>
+      </div>
+      <span id="nombre-usuario">Usuario</span>
+      <a href="../registro/index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+    </div>
+  </div>
+
+  <div class="tarjetas-container">
+    <div class="tarjeta" onclick="location.href='../registro/asistencias.html'">
+      <div class="icono">
+        <i class="fas fa-clipboard-list"></i>
+      </div>
+      <h2>Asistencias</h2>
+      <p>Gestión de registros de asistencia</p>
+    </div>
+
+    <a href="../registro/Indicador.html" class="tarjeta">
+      <div class="icono">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <h2>Indicadores</h2>
+      <p>Métricas y análisis de datos</p>
+    </a>
+
+    <a href="../registro/grafico.html" class="tarjeta">
+      <div class="icono">
+        <i class="fas fa-project-diagram"></i>
+      </div>
+      <h2>Gráfico de Proyectos</h2>
+      <p>Visualización gráfica de proyectos</p>
+    </a>
+  </div>
+  <a href="../registro/phis.html" class="tarjeta phis">
+  <div class="icono">
+    <i class="fas fa-cogs"></i> <!-- Tuerca/Mantenimiento -->
+  </div>
+  <h2>PHIS Mantenimiento y Automatización</h2>
+  <p>Gestión de mantenimiento y procesos automatizados</p>
+</a>
+
+
+
+  <script>
+    // Mostrar el nombre del usuario desde localStorage
+    window.addEventListener("DOMContentLoaded", function () {
+      const nombreUsuario = localStorage.getItem("usuarioActual");
+      const nombreSpan = document.getElementById("nombre-usuario");
+      if (nombreUsuario && nombreSpan) {
+        nombreSpan.textContent = nombreUsuario;
+      }
+    });
+
+    // Limpiar el nombre al cerrar sesión
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioActual");
+    }
+  </script>
+</body>
+</html>

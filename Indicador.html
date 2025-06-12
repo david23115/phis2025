@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudDrive - File & Folder Storage</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style id="app-style">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      color: #1f2937;
+    }
+    
+    .breadcrumb-container {
+      background-color: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(5px);
+      border-bottom: 1px solid #e5e7eb;
+      z-index: 10;
+    }
+    
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+    
+    .grid-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      user-select: none;
+    }
+    
+    .grid-item:hover {
+      background-color: #f3f4f6;
+      transform: translateY(-2px);
+    }
+    
+    .icon-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 8px;
+    }
+    
+    .file-name {
+      text-align: center;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.875rem;
+    }
+    
+    .upload-zone {
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      background-color: #ffffff;
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .upload-zone.active {
+      border-color: #3b82f6;
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+    
+    .upload-progress-overlay {
+      background-color: rgba(255, 255, 255, 0.9);
+      z-index: 20;
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background-color: #3b82f6;
+      transition: width 0.2s ease-in-out;
+    }
+    
+    .breadcrumb-item {
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    
+    .breadcrumb-item:hover {
+      background-color: #f3f4f6;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <h1 class="text-xl font-semibold text-blue-600">
+            <i class="fas fa-cloud mr-2"></i>CloudDrive
+          </h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button class="p-2 rounded-full hover:bg-gray-100">
+            <i class="fas fa-cog text-gray-500"></i>
+          </button>
+          <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+            <span class="text-sm font-medium">JD</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-container sticky top-0 w-full py-2 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex items-center space-x-2 text-sm">
+        <div class="breadcrumb-item text-blue-600">
+          <i class="fas fa-home"></i>
+        </div>
+        <div id="breadcrumb-path" class="flex items-center flex-wrap"></div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Upload Zone -->
+      <div id="upload-zone" class="upload-zone mb-6 p-6 flex flex-col items-center justify-center">
+        <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+        <p class="text-gray-600 font-medium">Drag and drop folders here to upload</p>
+        <p class="text-gray-500 text-sm mt-1">Or click to select folders</p>
+        <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden" />
+      </div>
+      
+      <!-- Upload Progress Overlay (Hidden by default) -->
+      <div id="upload-progress" class="upload-progress-overlay fixed inset-0 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-cloud-upload-alt text-blue-500 text-2xl mr-3"></i>
+            <div class="flex-1">
+              <h3 class="font-semibold">Uploading Folders</h3>
+              <p id="upload-status" class="text-sm text-gray-500">Preparing files...</p>
+            </div>
+          </div>
+          <div class="bg-gray-200 rounded-full h-1 mb-2">
+            <div id="progress-bar" class="progress-bar rounded-full w-0"></div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-500">
+            <span id="upload-progress-text">0%</span>
+            <span id="upload-size">Calculating size...</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Content Grid -->
+      <div id="content-grid" class="grid-container"></div>
+      
+      <!-- Empty State (shows when no content) -->
+      <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center">
+        <div class="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+          <i class="fas fa-folder-open text-blue-500 text-3xl"></i>
+        </div>
+        <h2 class="text-xl font-medium text-gray-800 mb-2">No files or folders yet</h2>
+        <p class="text-gray-500 mb-6 text-center max-w-md">Drag and drop folders from your desktop to upload them here</p>
+        <button id="upload-button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+          Upload Folders
+        </button>
+      </div>
+    </main>
+  </div>
+  
+  <script id="app-script">
+    // Current path tracking
+    let currentPath = [];
+    
+    // File type icon mapping
+    const fileTypeIcons = {
+      pdf: '<i class="fas fa-file-pdf text-red-500 text-4xl"></i>',
+      xlsx: '<i class="fas fa-file-excel text-green-600 text-4xl"></i>',
+      xls: '<i class="fas fa-file-excel text-green-600 text-4xl"></i>',
+      doc: '<i class="fas fa-file-word text-blue-600 text-4xl"></i>',
+      docx: '<i class="fas fa-file-word text-blue-600 text-4xl"></i>',
+      ppt: '<i class="fas fa-file-powerpoint text-orange-600 text-4xl"></i>',
+      pptx: '<i class="fas fa-file-powerpoint text-orange-600 text-4xl"></i>',
+      jpg: '<i class="fas fa-file-image text-purple-500 text-4xl"></i>',
+      jpeg: '<i class="fas fa-file-image text-purple-500 text-4xl"></i>',
+      png: '<i class="fas fa-file-image text-purple-500 text-4xl"></i>',
+      gif: '<i class="fas fa-file-image text-purple-500 text-4xl"></i>',
+      txt: '<i class="fas fa-file-alt text-gray-500 text-4xl"></i>',
+      zip: '<i class="fas fa-file-archive text-yellow-600 text-4xl"></i>',
+      mp3: '<i class="fas fa-file-audio text-blue-400 text-4xl"></i>',
+      mp4: '<i class="fas fa-file-video text-purple-600 text-4xl"></i>',
+      default: '<i class="fas fa-file text-gray-400 text-4xl"></i>'
+    };
+    
+    // DOM Elements
+    const uploadZone = document.getElementById('upload-zone');
+    const folderInput = document.getElementById('folder-input');
+    const contentGrid = document.getElementById('content-grid');
+    const emptyState = document.getElementById('empty-state');
+    const uploadButton = document.getElementById('upload-button');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const uploadProgressText = document.getElementById('upload-progress-text');
+    const uploadStatus = document.getElementById('upload-status');
+    const uploadSize = document.getElementById('upload-size');
+    const breadcrumbPath = document.getElementById('breadcrumb-path');
+    
+    // Mock data for the prototype
+    let fileSystem = {
+      root: {
+        type: 'folder',
+        name: 'Home',
+        children: {}
+      }
+    };
+    
+    // Initialize the app
+    function init() {
+      renderContent();
+      setupEventListeners();
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+      // Drag and drop for the entire document
+      document.addEventListener('dragover', handleDragOver);
+      document.addEventListener('drop', handleDrop);
+      document.addEventListener('dragleave', handleDragLeave);
+      
+      // Specific upload zone events
+      uploadZone.addEventListener('dragover', handleDragOver);
+      uploadZone.addEventListener('dragleave', handleDragLeave);
+      uploadZone.addEventListener('drop', handleDrop);
+      uploadZone.addEventListener('click', () => folderInput.click());
+      
+      // File input change
+      folderInput.addEventListener('change', handleFolderSelection);
+      
+      // Upload button click
+      uploadButton.addEventListener('click', () => folderInput.click());
+    }
+    
+    // Handle drag over
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.add('active');
+    }
+    
+    // Handle drag leave
+    function handleDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        uploadZone.classList.remove('active');
+      }
+    }
+    
+    // Handle drop
+    function handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.remove('active');
+      
+      // Check if items are folders
+      const items = e.dataTransfer.items;
+      let hasFolder = false;
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i].webkitGetAsEntry();
+        if (item && item.isDirectory) {
+          hasFolder = true;
+          break;
+        }
+      }
+      
+      if (hasFolder) {
+        processDroppedItems(e.dataTransfer.items);
+      } else {
+        alert('Please drop folders only. Individual files are not supported.');
+      }
+    }
+    
+    // Process dropped items
+    function processDroppedItems(items) {
+      // Show upload progress
+      uploadProgress.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      uploadProgressText.textContent = '0%';
+      uploadStatus.textContent = 'Analyzing folder structure...';
+      
+      // This would normally process the actual folders and files
+      // For the prototype, we'll simulate the upload process
+      simulateUpload(items);
+    }
+    
+    // Handle folder selection from input
+    function handleFolderSelection(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        // Show upload progress
+        uploadProgress.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        uploadProgressText.textContent = '0%';
+        uploadStatus.textContent = 'Analyzing folder structure...';
+        
+        // Simulate upload
+        simulateUploadFromInput(files);
+      }
+    }
+    
+    // Simulate upload from input
+    function simulateUploadFromInput(files) {
+      // Extract folder structure from file paths
+      const folderStructure = {};
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const path = file.webkitRelativePath.split('/');
+        const folderName = path[0];
+        
+        if (!folderStructure[folderName]) {
+          folderStructure[folderName] = {
+            type: 'folder',
+            name: folderName,
+            children: {}
+          };
+        }
+        
+        let currentLevel = folderStructure[folderName].children;
+        
+        // Process subfolders
+        for (let j = 1; j < path.length - 1; j++) {
+          const subfolder = path[j];
+          if (!currentLevel[subfolder]) {
+            currentLevel[subfolder] = {
+              type: 'folder',
+              name: subfolder,
+              children: {}
+            };
+          }
+          currentLevel = currentLevel[subfolder].children;
+        }
+        
+        // Add file
+        if (path.length > 1) {
+          const fileName = path[path.length - 1];
+          currentLevel[fileName] = {
+            type: 'file',
+            name: fileName,
+            size: file.size,
+            extension: fileName.split('.').pop().toLowerCase()
+          };
+        }
+      }
+      
+      // Simulate upload process
+      simulateUploadProgress(folderStructure);
+    }
+    
+    // Simulate upload from drag and drop
+    function simulateUpload(items) {
+      // Create mock folder structure
+      const folderStructure = {};
+      
+      // Process each item (in a real implementation, this would recursively process the entries)
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i].webkitGetAsEntry();
+        if (item && item.isDirectory) {
+          const folderName = item.name;
+          folderStructure[folderName] = {
+            type: 'folder',
+            name: folderName,
+            children: {
+              'document.pdf': {
+                type: 'file',
+                name: 'document.pdf',
+                size: 1024 * 1024 * 2.5, // 2.5 MB
+                extension: 'pdf'
+              },
+              'spreadsheet.xlsx': {
+                type: 'file',
+                name: 'spreadsheet.xlsx',
+                size: 1024 * 1024 * 1.2, // 1.2 MB
+                extension: 'xlsx'
+              },
+              'image.jpg': {
+                type: 'file',
+                name: 'image.jpg',
+                size: 1024 * 512, // 512 KB
+                extension: 'jpg'
+              },
+              'subfolder': {
+                type: 'folder',
+                name: 'subfolder',
+                children: {
+                  'notes.txt': {
+                    type: 'file',
+                    name: 'notes.txt',
+                    size: 1024 * 20, // 20 KB
+                    extension: 'txt'
+                  }
+                }
+              }
+            }
+          };
+        }
+      }
+      
+      // Simulate upload process
+      simulateUploadProgress(folderStructure);
+    }
+    
+    // Simulate upload progress
+    function simulateUploadProgress(folderStructure) {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 5;
+        progressBar.style.width = `${progress}%`;
+        uploadProgressText.textContent = `${progress}%`;
+        
+        if (progress < 30) {
+          uploadStatus.textContent = 'Creating folder structure...';
+          uploadSize.textContent = 'Preparing files...';
+        } else if (progress < 60) {
+          uploadStatus.textContent = 'Uploading files...';
+          uploadSize.textContent = '3.5 MB / 7.2 MB';
+        } else if (progress < 90) {
+          uploadStatus.textContent = 'Processing uploads...';
+          uploadSize.textContent = '6.8 MB / 7.2 MB';
+        } else {
+          uploadStatus.textContent = 'Finalizing...';
+          uploadSize.textContent = '7.2 MB / 7.2 MB';
+        }
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          
+          // Add the folders to our file system
+          Object.keys(folderStructure).forEach(folderName => {
+            fileSystem.root.children[folderName] = folderStructure[folderName];
+          });
+          
+          // Hide progress and render content
+          setTimeout(() => {
+            uploadProgress.classList.add('hidden');
+            renderContent();
+          }, 500);
+        }
+      }, 100);
+    }
+    
+    // Get current folder based on path
+    function getCurrentFolder() {
+      let current = fileSystem.root;
+      
+      for (const segment of currentPath) {
+        if (current.children && current.children[segment]) {
+          current = current.children[segment];
+        } else {
+          // Path doesn't exist, reset to root
+          currentPath = [];
+          current = fileSystem.root;
+          break;
+        }
+      }
+      
+      return current;
+    }
+    
+    // Render content based on current path
+    function renderContent() {
+      const currentFolder = getCurrentFolder();
+      const children = currentFolder.children || {};
+      
+      // Update breadcrumb
+      renderBreadcrumb();
+      
+      // Clear content grid
+      contentGrid.innerHTML = '';
+      
+      // Check if empty
+      if (Object.keys(children).length === 0) {
+        contentGrid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+      } else {
+        contentGrid.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+        
+        // Sort items - folders first, then files
+        const sortedItems = Object.keys(children).sort((a, b) => {
+          const itemA = children[a];
+          const itemB = children[b];
+          
+          if (itemA.type === 'folder' && itemB.type !== 'folder') {
+            return -1;
+          }
+          if (itemA.type !== 'folder' && itemB.type === 'folder') {
+            return 1;
+          }
+          return itemA.name.localeCompare(itemB.name);
+        });
+        
+        // Render each item
+        sortedItems.forEach(key => {
+          const item = children[key];
+          const gridItem = document.createElement('div');
+          gridItem.className = 'grid-item';
+          
+          const iconContainer = document.createElement('div');
+          iconContainer.className = 'icon-container';
+          
+          if (item.type === 'folder') {
+            iconContainer.innerHTML = '<i class="fas fa-folder text-yellow-400 text-5xl"></i>';
+            gridItem.addEventListener('click', () => {
+              currentPath.push(item.name);
+              renderContent();
+            });
+          } else {
+            const extension = item.extension || 'default';
+            iconContainer.innerHTML = fileTypeIcons[extension] || fileTypeIcons.default;
+            
+            // Add Excel file click handler
+            if (extension === 'xlsx' || extension === 'xls') {
+              gridItem.addEventListener('click', () => {
+                showExcelViewerOptions(item);
+              });
+            }
+          }
+          
+          const fileName = document.createElement('div');
+          fileName.className = 'file-name';
+          fileName.textContent = item.name;
+          
+          gridItem.appendChild(iconContainer);
+          gridItem.appendChild(fileName);
+          contentGrid.appendChild(gridItem);
+        });
+      }
+    }
+    
+    // Render breadcrumb
+    function renderBreadcrumb() {
+      breadcrumbPath.innerHTML = '';
+      
+      // Add root separator if not at root
+      if (currentPath.length > 0) {
+        const separator = document.createElement('div');
+        separator.className = 'mx-1 text-gray-400';
+        separator.innerHTML = '<i class="fas fa-chevron-right text-xs"></i>';
+        breadcrumbPath.appendChild(separator);
+      }
+      
+      // Add path segments
+      currentPath.forEach((segment, index) => {
+        const breadcrumbItem = document.createElement('div');
+        breadcrumbItem.className = 'breadcrumb-item';
+        breadcrumbItem.textContent = segment;
+        
+        // Add click handler to navigate
+        breadcrumbItem.addEventListener('click', () => {
+          // Navigate to this level
+          currentPath = currentPath.slice(0, index + 1);
+          renderContent();
+        });
+        
+        breadcrumbPath.appendChild(breadcrumbItem);
+        
+        // Add separator (except for last item)
+        if (index < currentPath.length - 1) {
+          const separator = document.createElement('div');
+          separator.className = 'mx-1 text-gray-400';
+          separator.innerHTML = '<i class="fas fa-chevron-right text-xs"></i>';
+          breadcrumbPath.appendChild(separator);
+        }
+      });
+    }
+    
+    // Add root click handler
+    document.querySelector('.breadcrumb-item:first-child').addEventListener('click', () => {
+      currentPath = [];
+      renderContent();
+    });
+    
+    // Show Excel viewer options
+    function showExcelViewerOptions(file) {
+      // Create modal overlay
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30';
+      
+      // Create modal content
+      const modalContent = document.createElement('div');
+      modalContent.className = 'bg-white rounded-lg shadow-xl p-6 max-w-md w-full';
+      
+      // Create header
+      const header = document.createElement('div');
+      header.className = 'flex items-center justify-between mb-6';
+      header.innerHTML = `
+        <h3 class="text-lg font-semibold">Open Excel File</h3>
+        <button class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      // Add close button functionality
+      header.querySelector('button').addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+      
+      // Create options
+      const options = document.createElement('div');
+      options.className = 'space-y-4';
+      
+      // Option 1: Integrated viewer
+      const option1 = document.createElement('button');
+      option1.className = 'w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition';
+      option1.innerHTML = `
+        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+          <i class="fas fa-table text-blue-600"></i>
+        </div>
+        <div class="text-left">
+          <h4 class="font-medium">Open in integrated viewer</h4>
+          <p class="text-sm text-gray-500">View the Excel file without leaving CloudDrive</p>
+        </div>
+      `;
+      
+      // Option 2: External viewer
+      const option2 = document.createElement('button');
+      option2.className = 'w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition';
+      option2.innerHTML = `
+        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4">
+          <i class="fas fa-external-link-alt text-green-600"></i>
+        </div>
+        <div class="text-left">
+          <h4 class="font-medium">Open in new tab</h4>
+          <p class="text-sm text-gray-500">View using an online Excel viewer</p>
+        </div>
+      `;
+      
+      // Add event listeners
+      option1.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        openIntegratedExcelViewer(file);
+      });
+      
+      option2.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        openExcelInNewTab(file);
+      });
+      
+      // Assemble modal
+      options.appendChild(option1);
+      options.appendChild(option2);
+      modalContent.appendChild(header);
+      modalContent.appendChild(options);
+      modal.appendChild(modalContent);
+      
+      // Add to body
+      document.body.appendChild(modal);
+    }
+    
+    // Open Excel file in integrated viewer
+    function openIntegratedExcelViewer(file) {
+      // Create modal for the integrated viewer
+      const viewerModal = document.createElement('div');
+      viewerModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex flex-col z-40';
+      
+      // Create toolbar
+      const toolbar = document.createElement('div');
+      toolbar.className = 'bg-white p-4 flex items-center justify-between shadow-md';
+      toolbar.innerHTML = `
+        <div class="flex items-center">
+          <h3 class="font-semibold">${file.name}</h3>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button id="open-new-tab" class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-sm">
+            Open in new tab
+          </button>
+          <button id="close-viewer" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      // Create iframe container
+      const iframeContainer = document.createElement('div');
+      iframeContainer.className = 'flex-1 bg-gray-100 p-4';
+      
+      // Create iframe (simulated viewer)
+      const iframe = document.createElement('div');
+      iframe.className = 'w-full h-full bg-white rounded shadow-lg flex items-center justify-center';
+      iframe.innerHTML = `
+        <div class="text-center p-6">
+          <i class="fas fa-file-excel text-green-500 text-5xl mb-4"></i>
+          <h4 class="text-xl font-medium mb-2">${file.name}</h4>
+          <p class="text-gray-500 mb-4">Simulated Excel Viewer</p>
+          <div class="bg-gray-100 p-4 rounded text-left overflow-auto max-w-lg mx-auto">
+            <table class="min-w-full border border-gray-300">
+              <thead>
+                <tr>
+                  <th class="border border-gray-300 px-4 py-2 bg-gray-200">A</th>
+                  <th class="border border-gray-300 px-4 py-2 bg-gray-200">B</th>
+                  <th class="border border-gray-300 px-4 py-2 bg-gray-200">C</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border border-gray-300 px-4 py-2">Data 1</td>
+                  <td class="border border-gray-300 px-4 py-2">Value</td>
+                  <td class="border border-gray-300 px-4 py-2">100</td>
+                </tr>
+                <tr>
+                  <td class="border border-gray-300 px-4 py-2">Data 2</td>
+                  <td class="border border-gray-300 px-4 py-2">Value</td>
+                  <td class="border border-gray-300 px-4 py-2">200</td>
+                </tr>
+                <tr>
+                  <td class="border border-gray-300 px-4 py-2">Data 3</td>
+                  <td class="border border-gray-300 px-4 py-2">Value</td>
+                  <td class="border border-gray-300 px-4 py-2">300</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      
+      // Assemble viewer
+      iframeContainer.appendChild(iframe);
+      viewerModal.appendChild(toolbar);
+      viewerModal.appendChild(iframeContainer);
+      
+      // Add event listeners
+      toolbar.querySelector('#close-viewer').addEventListener('click', () => {
+        document.body.removeChild(viewerModal);
+      });
+      
+      toolbar.querySelector('#open-new-tab').addEventListener('click', () => {
+        document.body.removeChild(viewerModal);
+        openExcelInNewTab(file);
+      });
+      
+      // Add to body
+      document.body.appendChild(viewerModal);
+    }
+    
+    // Open Excel file in a new tab
+    function openExcelInNewTab(file) {
+      // In a real implementation, this would use the actual file URL
+      // For the prototype, we'll use a placeholder URL
+      const fileUrl = `https://view.officeapps.live.com/op/view.aspx?src=example.com/${currentPath.join('/')}/${file.name}`;
+      window.open(fileUrl, '_blank');
+    }
+    
+    // Initialize the app
+    init();
+  </script>
+</body>
+</html>

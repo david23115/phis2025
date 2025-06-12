@@ -1,0 +1,215 @@
+/* Diseño profesional con tonos verdes y optimizado para móviles */
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: #e8f5e9; /* Fondo verde claro */
+    margin: 0;
+    padding: 0;
+    color: #2e7d32; /* Verde oscuro para texto */
+}
+
+/* Logo de la empresa */
+#logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: #1b5e20; /* Verde oscuro */
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 4px solid #66bb6a; /* Verde más claro */
+}
+
+h2, h3 {
+    text-align: center;
+    color: #2e7d32;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+form {
+    background-color: #ffffff;
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid #66bb6a; /* Verde claro */
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #388e3c; /* Verde intermedio */
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+    padding: 12px;
+    border: 1px solid #a5d6a7; /* Verde suave */
+    border-radius: 8px;
+    width: 100%;
+    background: #f1f8e9; /* Fondo verde muy claro */
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #66bb6a; /* Verde claro */
+    background-color: #ffffff;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background-color: #2e7d32; /* Verde oscuro */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #1b5e20; /* Verde más oscuro */
+}
+
+#resultadoHoras {
+    text-align: center;
+    font-size: 16px;
+    margin-top: 10px;
+    color: #2e7d32;
+}
+
+hr {
+    margin: 30px auto;
+    border: 0;
+    height: 1px;
+    background: #a5d6a7; /* Verde suave */
+    width: 90%;
+}
+
+/* Buscador destacado */
+#buscadorProyecto {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 14px;
+    border: 1px solid #a5d6a7; /* Verde suave */
+    border-radius: 8px;
+    font-size: 16px;
+    background: #f1f8e9; /* Fondo verde muy claro */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Lista de registros */
+#lista-registros {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #66bb6a; /* Verde claro */
+}
+
+#lista-registros div {
+    background: #f1f8e9; /* Fondo verde muy claro */
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid #a5d6a7; /* Verde suave */
+}
+
+#lista-registros div:hover {
+    background: #e8f5e9; /* Fondo verde claro */
+    border-color: #66bb6a; /* Verde claro */
+}
+
+/* Estilos para móviles */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    h2, h3 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    form {
+        padding: 20px;
+    }
+
+    label {
+        margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        margin-bottom: 15px;
+    }
+
+    button {
+        padding: 12px;
+    }
+
+    #buscadorProyecto {
+        margin-bottom: 15px;
+    }
+
+    #lista-registros {
+        padding: 15px;
+    }
+
+    #lista-registros div {
+        padding: 10px;
+    }
+}
+   /* Estilo para el enlace de "Regresar" */
+   .btn-regresar {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #2e7d32; /* Verde oscuro */
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-regresar:hover {
+    background-color: #1b5e20; /* Verde más oscuro */
+    transform: translateY(-2px);
+  }
+
+  .btn-regresar:active {
+    background-color: #145a14; /* Verde aún más oscuro */
+    transform: translateY(0);
+  }

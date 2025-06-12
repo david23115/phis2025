@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro de Asistencias</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style id="app-style">
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #34495e;
+      --accent-color: #3498db;
+      --light-color: #ecf0f1;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: #f8f9fa;
+      color: var(--primary-color);
+    }
+    
+    .app-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1.5rem 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .app-card {
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .app-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+      background-color: var(--light-color);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      font-weight: 600;
+    }
+    
+    .btn-primary {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+    
+    .btn-primary:hover {
+      background-color: #2980b9;
+      border-color: #2980b9;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
+    
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .loader-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--accent-color);
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    .table-hover tbody tr:hover {
+      background-color: rgba(52, 152, 219, 0.1);
+    }
+    
+    .alert {
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    
+    .summary-row {
+      font-weight: 700;
+      background-color: var(--light-color);
+    }
+
+    #successMessage, #errorMessage {
+      display: none;
+    }
+
+    .employees-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .employee-item {
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .employee-item:hover {
+      background-color: rgba(52, 152, 219, 0.1);
+    }
+    
+    .employee-item.active {
+      background-color: var(--accent-color);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="container">
+      <h1 class="text-center mb-0"><i class="fas fa-clipboard-list me-2"></i>Registro de Asistencias</h1>
+    </div>
+  </header>
+
+  <div class="container py-4">
+    <div class="row g-4">
+      <!-- Formulario de Registro -->
+      <div class="col-lg-6">
+        <div class="card app-card h-100">
+          <div class="card-header">
+            <i class="fas fa-user-clock me-2"></i>Registrar Asistencia
+          </div>
+          <div class="card-body">
+            <form id="attendanceForm">
+              <div class="mb-3">
+                <label for="employeeSelect" class="form-label">Empleado</label>
+                <select class="form-select" id="employeeSelect" required>
+                  <option value="" selected disabled>Seleccionar empleado...</option>
+                 <option value="Camioneta">Camioneta</option>
+                  <option value="Alirio Naranjo">Alirio Naranjo</option>
+                  <option value="Ernesto Vargas">Ernesto Vargas</option>
+                  <option value="Neider Cepedes">Neider Cepedes</option>
+                  <option value="Filemon Hoyos">Filemon Hoyos</option>
+                  <option value="Daniel Lopez">Daniel Lopez</option>
+                  <option value="Victoria">Victoria</option>
+                  <option value="Mauricio Buitrago">Mauricio Buitrago</option>
+                  <option value="Fernanda Plazas">Fernanda Plazas</option>
+                  <option value="Yeimy Plazas">Yeimy Plazas</option>
+                  <option value="Wilmar Plazas">Wilmar Plazas</option>
+                  <option value="Angel Viloria">Angel Viloria</option>
+                  <option value="Felipe Leal">Felipe leal</option>
+                  <option value="Solmet">Solmet</option>
+                  <option value="D&G">D&G</option>
+                  <option value="Jefferson">Jefferson</option>
+                  </select>
+              </div>
+              
+              <!-- Nuevo campo para Cliente -->
+              <div class="mb-3">
+                <label for="clientSelect" class="form-label">Cliente</label>
+                <select class="form-select" id="clientSelect" required>
+                  <option value="" selected disabled>Seleccionar cliente...</option>
+                  <option value="AGROSHELL">AGROSHELL</option>
+                  <option value="AMCOR">AMCOR</option>
+                  <option value="BIMBO">BIMBO</option>
+                  <option value="BIOLODOS">BIOLODOS</option>
+                  <option value="BON GELATI">BON GELATI</option>
+                  <option value="BUNNY">BUNNY</option>
+                  <option value="CARBOCOM">CARBOCOM</option>
+                  <option value="CENTRO COMERCIAL CASA BLANCA">CENTRO COMERCIAL CASA BLANCA</option>
+                  <option value="CHOCOLATO">CHOCOLATO</option>
+                  <option value="DICORP">DICORP</option>
+                  <option value="EXITO">EXITO</option>
+                  <option value="FRACTALIA">FRACTALIA</option>
+                  <option value="GCP">GCP</option>
+                  <option value="HERNANDO HUERTAS">HERNANDO HUERTAS</option>
+                  <option value="INVERLEOKA">INVERLEOKA</option>
+                  <option value="LEVARE">LEVARE</option>
+                  <option value="MI VAQUITA"></option>
+                  <option value="PHIS">PHIS</option>
+                  <option value="REFRILOGISTCA">REFRILOGISTICA</option>
+                  <option value="ROLLS">ROLLS</option>
+                  <option value="SLB">SLB</option>
+                  <option value="TITO PABON">TITO PABON</option>
+                  <option value="LEVARE">TONY MOHAMED</option>
+                </select>
+              </div>
+              
+              <!-- Nuevo campo para Proyectos -->
+              <div class="mb-3">
+                <label for="projectInput" class="form-label">Proyectos</label>
+                <input type="text" class="form-control" id="projectInput" placeholder="Buscar proyecto...">
+              </div>
+              
+              <div class="mb-3">
+                <label for="dateInput" class="form-label">Fecha</label>
+                <input type="text" class="form-control" id="dateInput" required>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="timeInInput" class="form-label">Hora de Entrada (HH:MM)</label>
+                  <input type="text" class="form-control" id="timeInInput" placeholder="08:00" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="timeOutInput" class="form-label">Hora de Salida (HH:MM)</label>
+                  <input type="text" class="form-control" id="timeOutInput" placeholder="17:00" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" required>
+                </div>
+              </div>
+              
+              <!-- Nuevo campo para Observaciones -->
+              <div class="mb-3">
+                <label for="observationsTextarea" class="form-label">Observaciones</label>
+                <textarea class="form-control" id="observationsTextarea" rows="3" placeholder="Ingrese sus observaciones aquí..."></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-save me-2"></i>Registrar Asistencia
+              </button>
+            </form>
+            
+            <div class="alert alert-success mt-3" id="successMessage">
+              <i class="fas fa-check-circle me-2"></i>Asistencia registrada correctamente.
+            </div>
+            
+            <div class="alert alert-danger mt-3" id="errorMessage">
+              <i class="fas fa-exclamation-circle me-2"></i><span id="errorMessageText"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Filtros y Carpeta de Empleado -->
+      <div class="col-lg-6">
+        <div class="card app-card mb-4">
+          <div class="card-header">
+            <i class="fas fa-filter me-2"></i>Filtros
+          </div>
+          <div class="card-body">
+            <form id="filterForm">
+              <div class="mb-3">
+                <label for="filterEmployeeSelect" class="form-label">Empleado</label>
+                <select class="form-select" id="filterEmployeeSelect">
+                  <option value="" selected>Todos los empleados</option>
+                  <option value="Camioneta">Camioneta</option>
+                  <option value="Alirio Naranjo">Alirio Naranjo</option>
+                  <option value="Ernesto Vargas">Ernesto Vargas</option>
+                  <option value="Neider Cepedes">Neider Cepedes</option>
+                  <option value="Filemon Hoyos">Filemon Hoyos</option>
+                  <option value="Daniel Lopez">Daniel Lopez</option>
+                  <option value="Victoria">Victoria</option>
+                  <option value="Mauricio Buitrago">Mauricio Buitrago</option>
+                  <option value="Fernanda Plazas">Fernanda Plazas</option>
+                  <option value="Yeimy Plazas">Yeimy Plazas</option>
+                  <option value="Wilmar Plazas">Wilmar Plazas</option>
+                  <option value="Angel Viloria">Angel Viloria</option>
+                  <option value="Felipe Leal">Felipe leal</option>
+                  <option value="Solmet">Solmet</option>
+                  <option value="D&G">D&G</option>
+                  <option value="Jefferson">Jefferson</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="filterProjectInput" class="form-label">Proyecto</label>
+                <input type="text" class="form-control" id="filterProjectInput" placeholder="Buscar por proyecto...">
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="dateFromInput" class="form-label">Desde</label>
+                  <input type="text" class="form-control" id="dateFromInput">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="dateToInput" class="form-label">Hasta</label>
+                  <input type="text" class="form-control" id="dateToInput">
+                </div>
+              </div>
+              
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                  <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+                <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary">
+                  <i class="fas fa-eraser me-2"></i>Limpiar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <div class="card app-card">
+          <div class="card-header">
+            <i class="fas fa-folder-open me-2"></i>Carpeta de Empleado
+          </div>
+          <div class="card-body">
+            <div class="employees-list">
+              <div class="employee-item" data-employee="">
+                <i class="fas fa-users me-2"></i>Todos los empleados
+              </div>
+              <div class="employee-item" data-employee="Camioneta">
+                <i class="fas fa-user me-2"></i>Camioneta
+              </div>
+              <div class="employee-item" data-employee="Alirio Naranjo">
+                <i class="fas fa-user me-2"></i>Alirio Naranjo
+              </div>
+              <div class="employee-item" data-employee="Ernesto Vargas">
+                <i class="fas fa-user me-2"></i>Ernesto Vargas
+              </div>
+              <div class="employee-item" data-employee="Neider Cepedes">
+                <i class="fas fa-user me-2"></i>Neider Cepedes
+              </div>
+              <div class="employee-item" data-employee="Filemon Hoyos">
+                <i class="fas fa-user me-2"></i>Filemon Hoyos
+              </div>
+               <div class="employee-item" data-employee="Daniel Lopez">
+                <i class="fas fa-user me-2"></i>Daniel Lopez
+              </div>
+               <div class="employee-item" data-employee="Victoria">
+                <i class="fas fa-user me-2"></i>Victoria
+              </div>
+               <div class="employee-item" data-employee="Mauricio Buitrago">
+                <i class="fas fa-user me-2"></i>Mauricio Buitrago
+              </div>
+               <div class="employee-item" data-employee="Fernanda Plazas">
+                <i class="fas fa-user me-2"></i>Fernanda Plazas
+              </div>
+               <div class="employee-item" data-employee="Yeimy Plazas">
+                <i class="fas fa-user me-2"></i>Yeimy Plazas
+              </div>
+               <div class="employee-item" data-employee="Wilmar Andres">
+                <i class="fas fa-user me-2"></i>Wilmar Andres
+              </div>
+                 <div class="employee-item" data-employee="Angel Viloria">
+                <i class="fas fa-user me-2"></i>Angel Viloria
+              </div>
+                 <div class="employee-item" data-employee="Angel Viloria">
+                <i class="fas fa-user me-2"></i>Felipe Leal
+              </div>
+                 <div class="employee-item" data-employee="Solmet">
+                <i class="fas fa-user me-2"></i>Solmet
+              </div>
+                 <div class="employee-item" data-employee="D&G">
+                <i class="fas fa-user me-2"></i>D&G
+              </div>
+               <div class="employee-item" data-employee="Catalina">
+                <i class="fas fa-user me-2"></i>Catalina
+              </div>
+              <div class="employee-item" data-employee="Jefferson">
+                <i class="fas fa-user me-2"></i>Jefferson
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tabla de Registros -->
+      <div class="col-12">
+        <div class="card app-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-table me-2"></i>Registros de Asistencias
+            </div>
+            <button id="resetAppBtn" class="btn btn-sm btn-danger">
+              <i class="fas fa-trash-alt me-2"></i>Reiniciar aplicación
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="loader" id="tableLoader">
+              <div class="loader-spinner"></div>
+              <p class="mt-2">Cargando registros...</p>
+            </div>
+            
+            <div class="table-container">
+              <table class="table table-hover" id="attendanceTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>Empleado</th>
+                    <th>Fecha</th>
+                    <th>Hora Entrada</th>
+                    <th>Hora Salida</th>
+                    <th>Proyecto</th>
+                    <th>Total Horas</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                  <!-- Los registros se cargarán dinámicamente -->
+                </tbody>
+                <tfoot>
+                  <tr class="summary-row">
+                    <td colspan="4" class="text-end">Total de horas:</td>
+                    <td id="totalHours">0</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            
+            <div class="text-center mt-3" id="emptyMessage">
+              <p class="text-muted"><i class="fas fa-info-circle me-2"></i>No hay registros disponibles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación para reiniciar aplicación -->
+  <div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar reinicio</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro que desea reiniciar la aplicación? Esta acción eliminará todos los registros guardados y no se podrá deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmResetBtn">
+            <i class="fas fa-trash-alt me-2"></i>Sí, reiniciar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+  <script id="app-script">
+    // Inicializar variables globales
+    let attendanceRecords = [];
+    const resetConfirmModal = new bootstrap.Modal(document.getElementById('resetConfirmModal'));
+    
+    // Función para cargar datos del LocalStorage
+    function loadData() {
+      const storedData = localStorage.getItem('attendanceRecords');
+      if (storedData) {
+        attendanceRecords = JSON.parse(storedData);
+      }
+    }
+    
+    // Función para guardar datos en LocalStorage
+    function saveData() {
+      localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+    }
+    
+    // Función para calcular horas entre dos tiempos en formato HH:MM
+    function calculateHours(timeIn, timeOut) {
+      const [inHours, inMinutes] = timeIn.split(':').map(Number);
+      const [outHours, outMinutes] = timeOut.split(':').map(Number);
+      
+      let totalMinutes = (outHours * 60 + outMinutes) - (inHours * 60 + inMinutes);
+      if (totalMinutes < 0) {
+        totalMinutes += 24 * 60; // Si la salida es al día siguiente
+      }
+      
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      return `${hours}:${minutes.toString().padStart(2, '0')}`;
+    }
+    
+    // Función para mostrar mensajes
+    function showMessage(type, message = '') {
+      const successMsg = document.getElementById('successMessage');
+      const errorMsg = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorMessageText');
+      
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+      
+      if (type === 'success') {
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+          successMsg.style.display = 'none';
+        }, 3000);
+      } else if (type === 'error') {
+        errorText.textContent = message;
+        errorMsg.style.display = 'block';
+        setTimeout(() => {
+          errorMsg.style.display = 'none';
+        }, 3000);
+      }
+    }
+    
+    // Función para renderizar la tabla de asistencias
+    function renderAttendanceTable(records = null) {
+      const tableBody = document.getElementById('attendanceTableBody');
+      const emptyMessage = document.getElementById('emptyMessage');
+      const totalHoursCell = document.getElementById('totalHours');
+      
+      // Si no se proporcionan registros, usar todos
+      if (records === null) {
+        records = attendanceRecords;
+      }
+      
+      // Mostrar/ocultar mensaje de tabla vacía
+      if (records.length === 0) {
+        tableBody.innerHTML = '';
+        emptyMessage.style.display = 'block';
+        totalHoursCell.textContent = '0';
+        return;
+      }
+      
+      emptyMessage.style.display = 'none';
+      
+      // Ordenar registros por fecha (más recientes primero)
+      records.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      // Renderizar filas
+      tableBody.innerHTML = '';
+      let totalHoursMinutes = 0;
+      
+      records.forEach(record => {
+        const row = document.createElement('tr');
+        
+        // Calcular el total de minutos para suma
+        const [hours, minutes] = record.totalHours.split(':').map(Number);
+        totalHoursMinutes += hours * 60 + minutes;
+        
+        row.innerHTML = `
+          <td>${record.employee}</td>
+          <td>${record.date}</td>
+          <td>${record.timeIn}</td>
+          <td>${record.timeOut}</td>
+          <td>${record.project || ''}</td>
+          <td>${record.totalHours}</td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Actualizar el total de horas
+      const totalHours = Math.floor(totalHoursMinutes / 60);
+      const totalMinutes = totalHoursMinutes % 60;
+      totalHoursCell.textContent = `${totalHours}:${totalMinutes.toString().padStart(2, '0')}`;
+    }
+    
+    // Función para filtrar registros
+    function filterRecords() {
+      const employee = document.getElementById('filterEmployeeSelect').value;
+      const dateFrom = document.getElementById('dateFromInput').value;
+      const dateTo = document.getElementById('dateToInput').value;
+      const project = document.getElementById('filterProjectInput').value.trim().toLowerCase();
+      
+      // Simular carga
+      document.getElementById('tableLoader').style.display = 'block';
+      
+      setTimeout(() => {
+        let filteredRecords = [...attendanceRecords];
+        
+        // Filtrar por empleado
+        if (employee) {
+          filteredRecords = filteredRecords.filter(record => record.employee === employee);
+        }
+        
+        // Filtrar por fecha inicio
+        if (dateFrom) {
+          const fromDate = new Date(dateFrom);
+          filteredRecords = filteredRecords.filter(record => new Date(record.date) >= fromDate);
+        }
+        
+        // Filtrar por fecha fin
+        if (dateTo) {
+          const toDate = new Date(dateTo);
+          toDate.setHours(23, 59, 59); // Final del día
+          filteredRecords = filteredRecords.filter(record => new Date(record.date) <= toDate);
+        }
+        
+        // Filtrar por proyecto
+        if (project) {
+          filteredRecords = filteredRecords.filter(record => 
+            record.project && record.project.toLowerCase().includes(project)
+          );
+        }
+        
+        // Actualizar tabla con registros filtrados
+        renderAttendanceTable(filteredRecords);
+        document.getElementById('tableLoader').style.display = 'none';
+      }, 500); // Simular tiempo de carga
+    }
+    
+    // Inicializar selectores de fecha
+    document.addEventListener('DOMContentLoaded', function() {
+      // Cargar datos del LocalStorage
+      loadData();
+      
+      // Mostrar registros iniciales
+      renderAttendanceTable();
+      
+      // Inicializar Flatpickr para selección de fechas
+      flatpickr("#dateInput", {
+        locale: "es",
+        dateFormat: "Y-m-d",
+        maxDate: "today",
+        defaultDate: "today"
+      });
+      
+      flatpickr("#dateFromInput", {
+        locale: "es",
+        dateFormat: "Y-m-d"
+      });
+      
+      flatpickr("#dateToInput", {
+        locale: "es",
+        dateFormat: "Y-m-d"
+      });
+      
+      flatpickr("#timeInInput", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        defaultHour: 8,
+        defaultMinute: 0
+      });
+      
+      flatpickr("#timeOutInput", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        defaultHour: 17,
+        defaultMinute: 0
+      });
+      
+      // Eventos
+      
+      // Evento de registro de asistencia
+      document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obtener valores del formulario
+        const employee = document.getElementById('employeeSelect').value;
+        const date = document.getElementById('dateInput').value;
+        const timeIn = document.getElementById('timeInInput').value;
+        const timeOut = document.getElementById('timeOutInput').value;
+        const project = document.getElementById('projectInput').value.trim();
+        
+        // Validar que la hora de salida sea posterior a la de entrada
+        const [inHours, inMinutes] = timeIn.split(':').map(Number);
+        const [outHours, outMinutes] = timeOut.split(':').map(Number);
+        
+        if (outHours < inHours || (outHours === inHours && outMinutes <= inMinutes)) {
+          showMessage('error', 'La hora de salida debe ser posterior a la de entrada');
+          return;
+        }
+        
+        // Calcular horas trabajadas
+        const totalHours = calculateHours(timeIn, timeOut);
+        
+        // Crear nuevo registro
+        const newRecord = {
+          id: Date.now(), // ID único basado en timestamp
+          employee,
+          date,
+          timeIn,
+          timeOut,
+          project,
+          totalHours
+        };
+        
+        // Añadir a la lista y guardar
+        attendanceRecords.push(newRecord);
+        saveData();
+        
+        // Actualizar tabla y mostrar mensaje
+        renderAttendanceTable();
+        showMessage('success');
+        
+        // Limpiar formulario (solo algunos campos)
+        document.getElementById('employeeSelect').selectedIndex = 0;
+      });
+      
+      // Evento de filtrado
+      document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        filterRecords();
+      });
+      
+      // Evento de limpieza de filtros
+      document.getElementById('clearFiltersBtn').addEventListener('click', function() {
+        document.getElementById('filterEmployeeSelect').selectedIndex = 0;
+        document.getElementById('dateFromInput').value = '';
+        document.getElementById('dateToInput').value = '';
+        renderAttendanceTable();
+      });
+      
+      // Manejo de la carpeta de empleado
+      document.querySelectorAll('.employee-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const employee = this.getAttribute('data-employee');
+          
+          // Actualizar UI
+          document.querySelectorAll('.employee-item').forEach(el => {
+            el.classList.remove('active');
+          });
+          this.classList.add('active');
+          
+          // Filtrar registros
+          document.getElementById('tableLoader').style.display = 'block';
+          
+          setTimeout(() => {
+            if (employee) {
+              const filteredRecords = attendanceRecords.filter(record => 
+                record.employee === employee
+              );
+              renderAttendanceTable(filteredRecords);
+              
+              // Actualizar también el selector de filtro
+              document.getElementById('filterEmployeeSelect').value = employee;
+            } else {
+              renderAttendanceTable();
+              document.getElementById('filterEmployeeSelect').selectedIndex = 0;
+            }
+            document.getElementById('tableLoader').style.display = 'none';
+          }, 500);
+        });
+      });
+      
+      // Reiniciar aplicación
+      document.getElementById('resetAppBtn').addEventListener('click', function() {
+        resetConfirmModal.show();
+      });
+      
+      document.getElementById('confirmResetBtn').addEventListener('click', function() {
+        // Limpiar datos
+        attendanceRecords = [];
+        saveData();
+        renderAttendanceTable();
+        resetConfirmModal.hide();
+        showMessage('success');
+      });
+    });
+  </script>
+</body>
+</html>

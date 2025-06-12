@@ -1,0 +1,89 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: #f5f7fa;
+  padding: 20px;
+}
+
+.barra-superior {
+  background-color: #007bff;
+  color: white;
+  padding: 20px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icono-usuario {
+  background-color: white;
+  color: #007bff;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+.usuario a {
+  color: #fff;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+/* Estilo base para todas las tarjetas en verde */
+.tarjeta {
+  background-color: #f0fff5;
+  border-radius: 20px;
+  padding: 30px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid #28a745;
+  color: #155724; /* texto verde oscuro */
+  text-decoration: none; /* para enlaces */
+  display: block; /* para enlaces también */
+  margin: 0 auto; /* centrar */
+}
+
+.tarjeta:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+  background-color: #dfffe5;
+}
+
+.tarjeta .icono {
+  font-size: 40px;
+  margin-bottom: 15px;
+  color: #28a745;
+}
+
+.tarjeta h2 {
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.tarjeta p {
+  font-size: 14px;
+  color: #155724;
+}
+
+.tarjetas-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  gap: 30px;
+  flex-wrap: wrap;
+}

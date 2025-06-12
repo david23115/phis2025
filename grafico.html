@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Gráficos Excel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style id="app-style">
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --info: #4895ef;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .app-title {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--info);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: rgba(67, 97, 238, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .upload-icon {
+            font-size: 2.5rem;
+            color: var(--info);
+            margin-bottom: 1rem;
+        }
+        
+        .chart-container {
+            margin: 2rem auto;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            transition: all 0.5s ease;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-custom {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: var(--info);
+            border-color: var(--info);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            border-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+        
+        .form-select, .form-control {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .export-section {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .spinner-wrapper {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+        
+        .no-data-message {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #6c757d;
+        }
+        
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--info);
+        }
+        
+        .alert-custom {
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.5s ease-in-out;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 1.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .export-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .export-section .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <h1 class="app-title">Visualizador de Gráficos Excel</h1>
+            <p class="text-muted">Sube tu archivo Excel para generar gráficos de pastel</p>
+        </div>
+        
+        <div id="uploadArea" class="upload-area">
+            <i class="bi bi-file-earmark-excel upload-icon"></i>
+            <h4>Arrastra y suelta tu archivo Excel aquí</h4>
+            <p class="text-muted">o</p>
+            <input type="file" id="excelFile" class="d-none" accept=".xlsx, .xls">
+            <button id="browseButton" class="btn btn-primary btn-custom">Seleccionar archivo</button>
+            <p class="mt-2 small text-muted">Solo se aceptan archivos .xlsx y .xls</p>
+        </div>
+        
+        <div id="fileInfo" class="alert alert-success alert-custom d-none" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span id="fileName"></span>
+        </div>
+        
+        <div class="controls d-none" id="controlsSection">
+            <select id="sheetSelector" class="form-select">
+                <option value="" selected disabled>Selecciona una hoja</option>
+            </select>
+            
+            <div class="input-group">
+                <span class="input-group-text">Rango</span>
+                <input type="text" id="dataRange" class="form-control" placeholder="Ej: A1:C10" pattern="[A-Z]+[0-9]+:[A-Z]+[0-9]+">
+            </div>
+            
+            <button id="generateButton" class="btn btn-success btn-custom">
+                <i class="bi bi-pie-chart-fill me-2"></i>Generar gráfico
+            </button>
+        </div>
+        
+        <div id="chartContainer" class="chart-container position-relative">
+            <div class="spinner-wrapper" id="chartSpinner">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+            
+            <div class="no-data-message" id="noDataMessage">
+                <i class="bi bi-bar-chart-line-fill no-data-icon"></i>
+                <h4>No hay datos para mostrar</h4>
+                <p class="text-muted">Sube un archivo Excel para comenzar</p>
+            </div>
+            
+            <canvas id="pieChart"></canvas>
+        </div>
+        
+        <div class="export-section d-none" id="exportSection">
+            <button id="exportPdf" class="btn btn-primary btn-custom">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Exportar a PDF
+            </button>
+            <button id="exportWord" class="btn btn-warning btn-custom">
+                <i class="bi bi-file-earmark-word me-2"></i>Exportar a Word
+            </button>
+        </div>
+        
+        <div id="downloadSection" class="mt-4 text-center d-none">
+            <div class="alert alert-info alert-custom">
+                <i class="bi bi-download me-2"></i>
+                <span id="downloadMessage">Tu archivo está listo para descargarse</span>
+            </div>
+            <a id="downloadLink" href="javascript:void(0)" class="btn btn-outline-primary btn-custom">
+                <i class="bi bi-download me-2"></i>Descargar archivo
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script id="app-script">
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const excelFile = document.getElementById('excelFile');
+        const browseButton = document.getElementById('browseButton');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const controlsSection = document.getElementById('controlsSection');
+        const sheetSelector = document.getElementById('sheetSelector');
+        const dataRange = document.getElementById('dataRange');
+        const generateButton = document.getElementById('generateButton');
+        const chartContainer = document.getElementById('chartContainer');
+        const chartSpinner = document.getElementById('chartSpinner');
+        const noDataMessage = document.getElementById('noDataMessage');
+        const pieChart = document.getElementById('pieChart');
+        const exportSection = document.getElementById('exportSection');
+        const exportPdf = document.getElementById('exportPdf');
+        const exportWord = document.getElementById('exportWord');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadMessage = document.getElementById('downloadMessage');
+        const downloadLink = document.getElementById('downloadLink');
+
+        // Chart instance
+        let chart = null;
+        let workbook = null;
+
+        // Event Listeners
+        browseButton.addEventListener('click', () => {
+            excelFile.click();
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                excelFile.files = e.dataTransfer.files;
+                handleExcelFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        excelFile.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleExcelFile(e.target.files[0]);
+            }
+        });
+
+        generateButton.addEventListener('click', generateChart);
+
+        exportPdf.addEventListener('click', () => exportChart('pdf'));
+        exportWord.addEventListener('click', () => exportChart('docx'));
+
+        // Functions
+        function handleExcelFile(file) {
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                alert('Por favor, sube un archivo Excel válido (.xlsx o .xls).');
+                return;
+            }
+
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('d-none');
+            fileInfo.classList.add('fade-in');
+
+            chartSpinner.style.display = 'flex';
+            noDataMessage.style.display = 'none';
+
+            // Read the Excel file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Populate sheet selector
+                    sheetSelector.innerHTML = '<option value="" selected disabled>Selecciona una hoja</option>';
+                    workbook.SheetNames.forEach(sheetName => {
+                        const option = document.createElement('option');
+                        option.value = sheetName;
+                        option.textContent = sheetName;
+                        sheetSelector.appendChild(option);
+                    });
+                    
+                    // Show controls
+                    controlsSection.classList.remove('d-none');
+                    controlsSection.classList.add('slide-up');
+                    
+                    chartSpinner.style.display = 'none';
+                    
+                    // Select first sheet by default
+                    if (workbook.SheetNames.length > 0) {
+                        sheetSelector.value = workbook.SheetNames[0];
+                    }
+                } catch (error) {
+                    console.error('Error reading Excel file:', error);
+                    chartSpinner.style.display = 'none';
+                    noDataMessage.style.display = 'flex';
+                    alert('Error al leer el archivo Excel. Por favor, intenta con otro archivo.');
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function generateChart() {
+            const selectedSheet = sheetSelector.value;
+            const range = dataRange.value;
+            
+            if (!selectedSheet) {
+                alert('Por favor, selecciona una hoja del Excel.');
+                return;
+            }
+            
+            chartSpinner.style.display = 'flex';
+            
+            setTimeout(() => {
+                try {
+                    const worksheet = workbook.Sheets[selectedSheet];
+                    
+                    // Parse the data with or without range
+                    let jsonData;
+                    if (range && /^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/.test(range)) {
+                        jsonData = XLSX.utils.sheet_to_json(worksheet, { range: range, header: 1 });
+                    } else {
+                        jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    }
+                    
+                    // Validate data
+                    if (!jsonData || jsonData.length < 2 || jsonData[0].length < 2) {
+                        throw new Error('Datos insuficientes para generar un gráfico');
+                    }
+                    
+                    // Create simplified data for the pie chart
+                    // Assuming first row is headers, and we use the first two columns
+                    const labels = [];
+                    const data = [];
+                    
+                    // Get the first 8 rows max to avoid too many slices
+                    const maxRows = Math.min(jsonData.length, 9);
+                    
+                    for (let i = 1; i < maxRows; i++) {
+                        if (jsonData[i] && jsonData[i][0] && jsonData[i][1] !== undefined) {
+                            labels.push(jsonData[i][0].toString());
+                            data.push(parseFloat(jsonData[i][1]) || 0);
+                        }
+                    }
+                    
+                    if (labels.length === 0 || data.length === 0) {
+                        throw new Error('No se encontraron datos numéricos válidos para el gráfico');
+                    }
+                    
+                    createPieChart(labels, data);
+                    exportSection.classList.remove('d-none');
+                    exportSection.classList.add('slide-up');
+                    
+                } catch (error) {
+                    console.error('Error generating chart:', error);
+                    alert('Error al generar el gráfico: ' + error.message);
+                    noDataMessage.style.display = 'flex';
+                } finally {
+                    chartSpinner.style.display = 'none';
+                }
+            }, 800); // Simulated delay for better UX
+        }
+
+        function createPieChart(labels, data) {
+            // Destroy previous chart if exists
+            if (chart) {
+                chart.destroy();
+            }
+            
+            noDataMessage.style.display = 'none';
+            
+            // Generate vibrant colors for the chart
+            const colors = [
+                '#4361ee', '#3a0ca3', '#4895ef', '#4cc9f0', '#f72585', 
+                '#7209b7', '#3f37c9', '#4cc9f0', '#72efdd', '#ff9e00'
+            ];
+            
+            // Create chart
+            chart = new Chart(pieChart, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, data.length),
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Poppins', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 10,
+                            bodyFont: {
+                                size: 13,
+                                family: "'Poppins', sans-serif"
+                            },
+                            titleFont: {
+                                size: 14,
+                                family: "'Poppins', sans-serif",
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1000
+                    }
+                }
+            });
+        }
+
+        function exportChart(format) {
+            if (!chart) {
+                alert('Por favor, genera un gráfico primero.');
+                return;
+            }
+            
+            chartSpinner.style.display = 'flex';
+            
+            // Simulate export processing
+            setTimeout(() => {
+                chartSpinner.style.display = 'none';
+                
+                // In a prototype, we just simulate the export functionality
+                downloadSection.classList.remove('d-none');
+                downloadSection.classList.add('fade-in');
+                
+                if (format === 'pdf') {
+                    downloadMessage.textContent = 'Tu archivo PDF está listo para descargarse';
+                    downloadLink.textContent = 'Descargar PDF';
+                    downloadLink.href = 'javascript:void(0)';
+                    downloadLink.download = 'grafico-excel.pdf';
+                } else {
+                    downloadMessage.textContent = 'Tu archivo Word está listo para descargarse';
+                    downloadLink.textContent = 'Descargar Word';
+                    downloadLink.href = 'javascript:void(0)';
+                    downloadLink.download = 'grafico-excel.docx';
+                }
+                
+                // In a real implementation, we would generate the file and set the href
+                
+                // Simulate download click
+                downloadLink.addEventListener('click', () => {
+                    alert('Esta es una versión prototipo. En la versión completa, se descargará el archivo ' + format.toUpperCase());
+                });
+                
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

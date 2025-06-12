@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Panel de Control</title>
-  <link rel="stylesheet" href="../registro/dashboard.css" />
+  <link rel="stylesheet" href="dashboard/dashboard.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
@@ -15,12 +15,12 @@
         <i class="fas fa-user"></i>
       </div>
       <span id="nombre-usuario">Usuario</span>
-      <a href="../registro/index.html" onclick="cerrarSesion()">Cerrar sesión</a>
+      <a href="registro/index.html" onclick="cerrarSesion()">Cerrar sesión</a>
     </div>
   </div>
 
   <div class="tarjetas-container">
-    <div class="tarjeta" onclick="location.href='../registro/asistencias.html'">
+    <div class="tarjeta" onclick="location.href='registro/asistencias.html'">
       <div class="icono">
         <i class="fas fa-clipboard-list"></i>
       </div>
@@ -28,7 +28,7 @@
       <p>Gestión de registros de asistencia</p>
     </div>
 
-    <a href="../registro/Indicador.html" class="tarjeta">
+    <a href="registro/Indicador.html" class="tarjeta">
       <div class="icono">
         <i class="fas fa-chart-line"></i>
       </div>
@@ -36,23 +36,22 @@
       <p>Métricas y análisis de datos</p>
     </a>
 
-    <a href="../registro/grafico.html" class="tarjeta">
+    <a href="registro/grafico.html" class="tarjeta">
       <div class="icono">
         <i class="fas fa-project-diagram"></i>
       </div>
       <h2>Gráfico de Proyectos</h2>
       <p>Visualización gráfica de proyectos</p>
     </a>
-  </div>
-  <a href="../registro/phis.html" class="tarjeta phis">
-  <div class="icono">
-    <i class="fas fa-cogs"></i> <!-- Tuerca/Mantenimiento -->
-  </div>
-  <h2>PHIS Mantenimiento y Automatización</h2>
-  <p>Gestión de mantenimiento y procesos automatizados</p>
-</a>
 
-
+    <a href="registro/phis.html" class="tarjeta phis">
+      <div class="icono">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <h2>PHIS Mantenimiento y Automatización</h2>
+      <p>Gestión de mantenimiento y procesos automatizados</p>
+    </a>
+  </div>
 
   <script>
     // Mostrar el nombre del usuario desde localStorage
